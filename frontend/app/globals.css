@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #fafafa;
+  --foreground: #171717;
+  --card: rgba(255, 255, 255, 0.74);
+  --card-hover: rgba(255, 255, 255, 0.9);
+  --border: rgba(23, 23, 23, 0.1);
+  --border-strong: rgba(23, 23, 23, 0.2);
+  --muted: #737373;
+  --muted-foreground: #a1a1a1;
+  --accent: #0070f3;
+  --accent-hover: #0761d1;
+  --accent-foreground: #ffffff;
+  --danger: #ee0000;
+  --danger-foreground: #ffffff;
+  --success: #008060;
+  --warning: #f5a623;
+  --code-bg: rgba(242, 242, 242, 0.85);
+  --overlay: rgba(0, 0, 0, 0.45);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: rgba(14, 14, 18, 0.68);
+  --card-hover: rgba(22, 22, 28, 0.85);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --muted: #a1a1a1;
+  --muted-foreground: #666666;
+  --accent: #3291ff;
+  --accent-hover: #5aafff;
+  --accent-foreground: #000000;
+  --danger: #e5484d;
+  --danger-foreground: #ffffff;
+  --success: #46a758;
+  --warning: #f5a623;
+  --code-bg: rgba(26, 26, 30, 0.85);
+  --overlay: rgba(0, 0, 0, 0.65);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-code-bg: var(--code-bg);
+  --color-overlay: var(--overlay);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-space);
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: transparent;
+  color: var(--foreground);
+  font-feature-settings: "ss01";
+}
+
+/* Display headings use Space Grotesk; body stays Geist. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-space, var(--font-geist-sans)), sans-serif;
+}
+
+/* Theme veil painted over the fixed Backdrop: light mode washes the art to
+   a pastel so dark text stays readable; dark mode keeps the night sky moody. */
+.bg-veil {
+  background: linear-gradient(
+    180deg,
+    rgba(250, 250, 250, 0.78) 0%,
+    rgba(250, 250, 250, 0.9) 100%
+  );
+}
+.dark .bg-veil {
+  background: linear-gradient(
+    180deg,
+    rgba(5, 7, 16, 0.3) 0%,
+    rgba(5, 7, 16, 0.6) 100%
+  );
+}
+
+/* Frosted panels over the backdrop. */
+.glass {
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+/* --- Landing page motion --- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hero-in {
+  animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+/* Slow ken-burns drift for the fixed site backdrop. */
+@keyframes bg-drift {
+  0%,
+  100% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.12) translate3d(-1.6%, -1.2%, 0);
+  }
+}
+.animate-bg-drift {
+  animation: bg-drift 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Falling asteroids: diagonal streak with a glowing head. */
+@keyframes asteroid-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(18deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-28vw, 112vh, 0) rotate(18deg);
+    opacity: 0;
+  }
+}
+.animate-asteroid {
+  animation-name: asteroid-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+/* Slow galaxy rotation. */
+@keyframes galaxy-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-galaxy-spin {
+  animation: galaxy-spin 90s linear infinite;
+  will-change: transform;
+}
+
+/* Star twinkle. */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.4);
+  }
+}
+.animate-twinkle {
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.animate-caret {
+  animation: caret-blink 1.1s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 54ch;
+  }
+}
+.typing-url {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  animation: typing 2.2s steps(54, end) 0.8s forwards;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-ticker {
+  animation: ticker 28s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .hero-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+  .animate-float,
+  .animate-caret,
+  .animate-shimmer,
+  .animate-ticker,
+  .animate-bg-drift,
+  .animate-asteroid,
+  .animate-galaxy-spin,
+  .animate-twinkle {
+    animation: none;
+  }
+  .typing-url {
+    animation: none;
+    width: 54ch;
+  }
+}
