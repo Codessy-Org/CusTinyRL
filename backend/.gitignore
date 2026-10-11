@@ -1,0 +1,8 @@
+# Secrets / local settings
+.env
+
+# Build output
+/api
+/migrate
+*.test
+coverage.out

@@ -1,0 +1,84 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: shortener
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shortener-dev-password}
+      POSTGRES_DB: shortener
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Local development convenience: published on loopback only, never
+    # on public interfaces. Remove for production-style isolation.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortener -d shortener"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Not published to the host: only internal services can reach Postgres.
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Not published to the host: only internal services can reach Redis.
+    restart: unless-stopped
+
+  migrate:
+    build: ./backend
+    entrypoint: ["/app/migrate"]
+    environment:
+      DATABASE_URL: postgres://shortener:${POSTGRES_PASSWORD:-shortener-dev-password}@db:5432/shortener?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: ./backend
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      PORT: "8080"
+      DATABASE_URL: postgres://shortener:${POSTGRES_PASSWORD:-shortener-dev-password}@db:5432/shortener?sslmode=disable
+      REDIS_ADDR: redis:6379
+      BASE_URL: ${BASE_URL:-http://localhost:8080}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      ALLOW_ANONYMOUS: ${ALLOW_ANONYMOUS:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      AUTO_MIGRATE: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
